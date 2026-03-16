@@ -2,24 +2,38 @@ package hse.java.lectures.lecture6.tasks.queue;
 
 public class BoundedBlockingQueue<T> {
 
-
+    T[] items;
     public BoundedBlockingQueue(int capacity) {
-
+        if (capacity <= 0) throw new IllegalArgumentException();
+        items = (T[]) new Object[capacity];
     }
 
-    public void put(T item) throws InterruptedException {
-
+    int size, tail;
+    public synchronized void put(T item) throws InterruptedException {
+        if (item == null) throw new NullPointerException();
+        while (size == items.length) wait();
+        items[tail] = item;
+        if (++tail == items.length) tail = 0;
+        size += 1;
+        notifyAll();
     }
 
-    public T take() throws InterruptedException {
-        return null;
+    int head;
+    public synchronized T take() throws InterruptedException {
+        while (size == 0) wait();
+        T item = items[head];
+        items[head] = null;
+        if (++head == items.length) head = 0;
+        size -= 1;
+        notifyAll();
+        return item;
     }
 
-    public int size() {
-        return 0;
+    public synchronized int size() {
+        return size;
     }
 
     public int capacity() {
-        return 0;
+        return items.length;
     }
 }
